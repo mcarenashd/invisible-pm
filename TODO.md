@@ -36,6 +36,16 @@
 - [x] Session strategy: JWT
 - [x] Type augmentation para session.user.id
 
+### Testing
+- [x] Vitest configurado para unit/integration tests
+- [x] Test database separada (`invisible_pm_test`)
+- [x] Helpers: `resetDatabase()`, `getTestPrisma()`, `applyMigrations()`
+- [x] Integration tests auth-register (3 tests)
+- [x] Integration tests auth-login (6 tests)
+- [x] Playwright configurado para E2E (Chromium)
+- [x] E2E tests flujo auth completo (5 tests): redirect, navegación, registro, login, error
+- [x] Scripts npm: `test`, `test:watch`, `test:e2e`
+
 ### Decisiones Arquitectónicas Tomadas
 - **Backend:** Next.js API Routes (monolito fullstack, no NestJS)
 - **Esquema BD:** Incluye TaskRelation + AuditLog desde día 1

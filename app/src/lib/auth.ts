@@ -2,8 +2,10 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { authConfig } from "@/lib/auth.config";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: "credentials",
@@ -42,43 +44,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
     // Microsoft Azure AD provider will be added in Fase 4
   ],
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-    async authorized({ auth, request }) {
-      const isLoggedIn = !!auth?.user;
-      const isAuthPage =
-        request.nextUrl.pathname.startsWith("/login") ||
-        request.nextUrl.pathname.startsWith("/register");
-
-      if (isAuthPage) {
-        if (isLoggedIn) {
-          return Response.redirect(new URL("/dashboard", request.nextUrl));
-        }
-        return true;
-      }
-
-      if (!isLoggedIn) {
-        return false; // redirects to signIn page
-      }
-
-      return true;
-    },
-  },
 });

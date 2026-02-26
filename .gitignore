@@ -30,3 +30,7 @@ app/src/generated/prisma/
 
 # vercel
 app/.vercel
+
+# playwright
+app/playwright-report/
+app/test-results/
