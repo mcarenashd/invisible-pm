@@ -1,0 +1,228 @@
+// Invisible PM - Enterprise Project Management Platform
+// Schema Version: 1.0 (Fase 0)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ────────────────────────────────────────────
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum TaskStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskRelationType {
+  BLOCKS
+  BLOCKED_BY
+  RELATED_TO
+  DUPLICATES
+}
+
+enum TimeEntrySource {
+  MANUAL
+  OUTLOOK
+  TEAMS
+  IMPORTED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+}
+
+// ─── MODELS ───────────────────────────────────────────
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  description String?
+
+  workspace_users WorkspaceUser[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("roles")
+}
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  email           String   @unique
+  full_name       String
+  sso_provider_id String?
+  hourly_rate     Decimal? @db.Decimal(10, 2)
+  is_active       Boolean  @default(true)
+
+  workspace_users WorkspaceUser[]
+  assigned_tasks  Task[]          @relation("TaskAssignee")
+  time_entries    TimeEntry[]
+  audit_logs      AuditLog[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("users")
+}
+
+model Workspace {
+  id     String  @id @default(uuid()) @db.Uuid
+  name   String
+  domain String? @unique
+
+  workspace_users WorkspaceUser[]
+  projects        Project[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("workspaces")
+}
+
+model WorkspaceUser {
+  id           String @id @default(uuid()) @db.Uuid
+  workspace_id String @db.Uuid
+  user_id      String @db.Uuid
+  role_id      String @db.Uuid
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  user      User      @relation(fields: [user_id], references: [id])
+  role      Role      @relation(fields: [role_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@unique([workspace_id, user_id])
+  @@map("workspace_users")
+}
+
+model Project {
+  id           String        @id @default(uuid()) @db.Uuid
+  workspace_id String        @db.Uuid
+  name         String
+  description  String?
+  status       ProjectStatus @default(PLANNING)
+  start_date   DateTime?
+  end_date     DateTime?
+  total_budget Decimal?      @db.Decimal(14, 2)
+  currency     String        @default("USD") @db.VarChar(3)
+
+  workspace Workspace @relation(fields: [workspace_id], references: [id])
+  tasks     Task[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("projects")
+}
+
+model Task {
+  id              String       @id @default(uuid()) @db.Uuid
+  project_id      String       @db.Uuid
+  parent_task_id  String?      @db.Uuid
+  title           String
+  description     String?
+  status          TaskStatus   @default(BACKLOG)
+  priority        TaskPriority @default(MEDIUM)
+  assignee_id     String?      @db.Uuid
+  estimated_hours Decimal?     @db.Decimal(8, 2)
+  position        Int          @default(0)
+  due_date        DateTime?
+
+  project     Project @relation(fields: [project_id], references: [id])
+  assignee    User?   @relation("TaskAssignee", fields: [assignee_id], references: [id])
+  parent_task Task?   @relation("TaskSubtasks", fields: [parent_task_id], references: [id])
+  subtasks    Task[]  @relation("TaskSubtasks")
+
+  time_entries         TimeEntry[]
+  source_relations     TaskRelation[] @relation("SourceTask")
+  target_relations     TaskRelation[] @relation("TargetTask")
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("tasks")
+}
+
+model TaskRelation {
+  id             String           @id @default(uuid()) @db.Uuid
+  source_task_id String           @db.Uuid
+  target_task_id String           @db.Uuid
+  relation_type  TaskRelationType
+
+  source_task Task @relation("SourceTask", fields: [source_task_id], references: [id])
+  target_task Task @relation("TargetTask", fields: [target_task_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@unique([source_task_id, target_task_id, relation_type])
+  @@map("task_relations")
+}
+
+model TimeEntry {
+  id                String          @id @default(uuid()) @db.Uuid
+  task_id           String          @db.Uuid
+  user_id           String          @db.Uuid
+  date              DateTime        @db.Date
+  hours             Decimal         @db.Decimal(5, 2)
+  source            TimeEntrySource @default(MANUAL)
+  external_event_id String?
+
+  task Task @relation(fields: [task_id], references: [id])
+  user User @relation(fields: [user_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("time_entries")
+}
+
+model AuditLog {
+  id          String      @id @default(uuid()) @db.Uuid
+  user_id     String      @db.Uuid
+  entity_type String
+  entity_id   String      @db.Uuid
+  action      AuditAction
+  changes     Json?
+  ip_address  String?     @db.VarChar(45)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@index([entity_type, entity_id])
+  @@index([user_id])
+  @@map("audit_logs")
+}
