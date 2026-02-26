@@ -2,10 +2,8 @@
 
 import { useEffect } from "react";
 import { useTaskStore, type TaskItem } from "@/stores/task-store";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { TaskCard } from "@/components/tasks/task-card";
 import { cn } from "@/lib/utils";
 
 const COLUMNS = [
@@ -15,20 +13,6 @@ const COLUMNS = [
   { key: "IN_REVIEW", label: "En revisión", color: "border-t-purple-400" },
   { key: "DONE", label: "Hecho", color: "border-t-green-400" },
 ];
-
-const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "bg-gray-100 text-gray-600",
-  MEDIUM: "bg-blue-100 text-blue-700",
-  HIGH: "bg-orange-100 text-orange-700",
-  URGENT: "bg-red-100 text-red-700",
-};
-
-const PRIORITY_LABELS: Record<string, string> = {
-  LOW: "Baja",
-  MEDIUM: "Media",
-  HIGH: "Alta",
-  URGENT: "Urgente",
-};
 
 interface KanbanBoardProps {
   projectId: string;
@@ -97,42 +81,11 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             {/* Cards */}
             <div className="flex flex-1 flex-col gap-2 p-2">
               {columnTasks.map((task) => (
-                <Card
+                <TaskCard
                   key={task.id}
-                  className="cursor-grab p-3 active:cursor-grabbing"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, task.id)}
-                >
-                  <p className="text-sm font-medium">{task.title}</p>
-                  {task.description && (
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                      {task.description}
-                    </p>
-                  )}
-                  <div className="mt-2 flex items-center justify-between">
-                    <Badge
-                      variant="secondary"
-                      className={cn(
-                        "text-[10px]",
-                        PRIORITY_COLORS[task.priority]
-                      )}
-                    >
-                      {PRIORITY_LABELS[task.priority] || task.priority}
-                    </Badge>
-                    {task.assignee && (
-                      <Avatar className="h-6 w-6">
-                        <AvatarFallback className="text-[10px]">
-                          {task.assignee.full_name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                </Card>
+                  task={task}
+                  onDragStart={handleDragStart}
+                />
               ))}
             </div>
           </div>

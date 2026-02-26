@@ -61,8 +61,8 @@
 - [x] `api/projects/[id]` — GET (detalle con tareas) + PATCH (actualizar) + DELETE (soft delete)
 - [x] `api/tasks` — GET (por project_id) + POST (crear con auto-position y audit log)
 - [x] `api/tasks/[id]` — PATCH (actualizar status/priority/etc) + DELETE (soft delete)
-- [ ] `api/users` — gestión de usuarios (Fase 1b)
-- [ ] `api/time-entries` — registro de horas (Fase 1b)
+- [x] `api/users` — GET miembros del workspace con roles (Fase 1b)
+- [x] `api/time-entries` — GET (filtros) + POST (validación) + DELETE soft (Fase 1b)
 - [x] Helper `getSessionOrUnauthorized()` para auth en API Routes
 
 ### Frontend — Layout y Navegación
@@ -87,12 +87,23 @@
 ### Roles y Permisos
 - [x] Roles base en BD (Admin, PM, Consultor, Cliente) con seed
 - [x] Workspace con asignación de usuario+rol (WorkspaceUser)
-- [ ] Middleware de permisos en API Routes (Fase 1b)
+- [x] Sistema de permisos por rol (`permissions.ts` con RBAC)
+- [x] Helpers `checkPermission()` y `forbiddenResponse()` en api-utils
+- [x] Permisos aplicados a `project:create` y `project:delete`
 - [ ] Visibilidad condicional en UI según rol (Fase 2)
 
 ### Estado Global (Zustand)
 - [x] Store de proyectos (fetch, create, update, delete)
 - [x] Store de tareas (fetch, create, update, delete)
+
+### Frontend — Registro de Horas
+- [x] Componente LogTimeDialog (seleccionar tarea, fecha, horas)
+- [x] Página `/dashboard/time-entries` con listado y totales
+- [x] Eliminar registros propios
+
+### Frontend — Tareas (mejoras Fase 1b)
+- [x] TaskCard con menú: asignar usuario, desasignar, eliminar
+- [x] Dropdown dinámico de usuarios del workspace
 
 ### Seed actualizado
 - [x] Workspace por defecto "Invisible PM" con admin asignado

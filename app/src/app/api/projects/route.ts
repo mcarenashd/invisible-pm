@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionOrUnauthorized } from "@/lib/api-utils";
+import { getSessionOrUnauthorized, checkPermission, forbiddenResponse } from "@/lib/api-utils";
 
 // GET /api/projects - List all projects
 export async function GET(request: Request) {
-  const { session, error } = await getSessionOrUnauthorized();
+  const { error } = await getSessionOrUnauthorized();
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
@@ -40,7 +40,6 @@ export async function GET(request: Request) {
     };
   });
 
-  void session; // used for auth check
   return NextResponse.json(result);
 }
 
@@ -48,6 +47,9 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const { session, error } = await getSessionOrUnauthorized();
   if (error) return error;
+
+  const { allowed } = await checkPermission(session!.user.id, "project:create");
+  if (!allowed) return forbiddenResponse();
 
   const body = await request.json();
   const { name, description, status, start_date, end_date, total_budget, currency, workspace_id } = body;

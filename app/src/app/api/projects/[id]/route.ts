@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionOrUnauthorized } from "@/lib/api-utils";
+import { getSessionOrUnauthorized, checkPermission, forbiddenResponse } from "@/lib/api-utils";
 
 // GET /api/projects/:id
 export async function GET(
@@ -96,6 +96,9 @@ export async function DELETE(
 ) {
   const { session, error } = await getSessionOrUnauthorized();
   if (error) return error;
+
+  const { allowed } = await checkPermission(session!.user.id, "project:delete");
+  if (!allowed) return forbiddenResponse();
 
   const { id } = await params;
 
