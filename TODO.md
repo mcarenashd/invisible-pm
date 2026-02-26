@@ -24,11 +24,17 @@
 - [x] Scripts npm: `db:migrate`, `db:seed`, `db:reset`, `db:studio`
 
 ### Autenticación
-- [ ] Instalar y configurar Auth.js v5 (NextAuth)
-- [ ] Provider de credentials (email/password para desarrollo)
-- [ ] Preparar provider Microsoft Azure AD (sin implementar hasta Fase 4)
-- [ ] Middleware de protección de rutas
-- [ ] Páginas de login/register
+- [x] Instalar y configurar Auth.js v5 (next-auth@5.0.0-beta.30)
+- [x] Provider de credentials (email/password) con bcryptjs
+- [x] Preparar estructura para Microsoft Azure AD (placeholder, Fase 4)
+- [x] Middleware de protección de rutas (matcher configurable)
+- [x] Página de login (`/login`)
+- [x] Página de register (`/register`) + API Route `/api/auth/register`
+- [x] Página dashboard placeholder (`/dashboard`)
+- [x] Migración: campo `password_hash` en User
+- [x] Seed: usuario de prueba `admin@invisiblepm.dev` / `admin123!`
+- [x] Session strategy: JWT
+- [x] Type augmentation para session.user.id
 
 ### Decisiones Arquitectónicas Tomadas
 - **Backend:** Next.js API Routes (monolito fullstack, no NestJS)

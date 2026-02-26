@@ -1,4 +1,5 @@
 import "dotenv/config";
+import bcrypt from "bcryptjs";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
@@ -46,6 +47,28 @@ async function main() {
     } else {
       console.log(`  Role already exists: ${role.name}`);
     }
+  }
+
+  // Test user
+  console.log("Seeding test user...");
+  const testEmail = "admin@invisiblepm.dev";
+  const existingUser = await prisma.user.findUnique({
+    where: { email: testEmail },
+  });
+
+  if (!existingUser) {
+    const password_hash = await bcrypt.hash("admin123!", 12);
+    await prisma.user.create({
+      data: {
+        email: testEmail,
+        password_hash,
+        full_name: "Admin Dev",
+        is_active: true,
+      },
+    });
+    console.log(`  Created user: ${testEmail} (password: admin123!)`);
+  } else {
+    console.log(`  User already exists: ${testEmail}`);
   }
 
   console.log("Seed completed.");
