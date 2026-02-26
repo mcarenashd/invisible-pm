@@ -28,6 +28,9 @@ export default async function ProjectDetailPage({
     end_date: project.end_date?.toISOString() ?? null,
     total_budget: project.total_budget ? String(project.total_budget) : null,
     currency: project.currency,
+    module_budget: project.module_budget,
+    module_time: project.module_time,
+    module_workload: project.module_workload,
   };
 
   return (

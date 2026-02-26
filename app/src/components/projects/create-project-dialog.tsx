@@ -14,12 +14,16 @@ import {
 import { Plus } from "lucide-react";
 import { useProjectStore } from "@/stores/project-store";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface CreateProjectDialogProps {
   workspaceId: string;
 }
 
 export function CreateProjectDialog({ workspaceId }: CreateProjectDialogProps) {
+  const { can } = usePermissions();
+
+  if (!can("project:create")) return null;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

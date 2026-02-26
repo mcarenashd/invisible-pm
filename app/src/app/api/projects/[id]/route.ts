@@ -43,6 +43,9 @@ export async function PATCH(
   const { session, error } = await getSessionOrUnauthorized();
   if (error) return error;
 
+  const { allowed } = await checkPermission(session!.user.id, "project:update");
+  if (!allowed) return forbiddenResponse();
+
   const { id } = await params;
   const body = await request.json();
 
@@ -73,6 +76,9 @@ export async function PATCH(
         total_budget: body.total_budget,
       }),
       ...(body.currency !== undefined && { currency: body.currency }),
+      ...(body.module_budget !== undefined && { module_budget: body.module_budget }),
+      ...(body.module_time !== undefined && { module_time: body.module_time }),
+      ...(body.module_workload !== undefined && { module_workload: body.module_workload }),
     },
   });
 

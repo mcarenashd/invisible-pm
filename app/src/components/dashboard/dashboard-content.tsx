@@ -7,6 +7,7 @@ import {
   Clock,
   Users,
   TrendingUp,
+  DollarSign,
   ArrowRight,
 } from "lucide-react";
 import {
@@ -17,6 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const STATUS_LABELS: Record<string, string> = {
   BACKLOG: "Backlog",
@@ -41,12 +43,19 @@ interface RecentTask {
   project: { id: string; name: string };
 }
 
+interface BudgetStats {
+  totalBudget: number;
+  projectCount: number;
+}
+
 interface DashboardStats {
   activeProjects: number;
   pendingTasks: number;
   hoursThisWeek: number;
   teamMembers: number;
   recentTasks: RecentTask[];
+  role: string | null;
+  budgetStats: BudgetStats | null;
 }
 
 interface DashboardContentProps {
@@ -56,6 +65,7 @@ interface DashboardContentProps {
 export function DashboardContent({ userName }: DashboardContentProps) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isManager } = usePermissions();
 
   useEffect(() => {
     fetch("/api/dashboard/stats")
@@ -65,7 +75,7 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       .finally(() => setLoading(false));
   }, []);
 
-  const statCards = [
+  const statCards: { name: string; value: string | number; icon: typeof FolderKanban }[] = [
     {
       name: "Proyectos activos",
       value: stats?.activeProjects ?? 0,
@@ -81,12 +91,23 @@ export function DashboardContent({ userName }: DashboardContentProps) {
       value: `${(stats?.hoursThisWeek ?? 0).toFixed(1)}h`,
       icon: Clock,
     },
-    {
+  ];
+
+  if (isManager) {
+    statCards.push({
       name: "Miembros del equipo",
       value: stats?.teamMembers ?? 0,
       icon: Users,
-    },
-  ];
+    });
+  }
+
+  if (isManager && stats?.budgetStats) {
+    statCards.push({
+      name: "Presupuesto activo",
+      value: `$${(stats.budgetStats.totalBudget).toLocaleString("es-ES")}`,
+      icon: DollarSign,
+    });
+  }
 
   return (
     <div className="space-y-6">

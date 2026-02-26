@@ -1,5 +1,3 @@
-import { prisma } from "@/lib/prisma";
-
 export type RoleName = "Admin" | "PM" | "Consultor" | "Cliente";
 
 // Define what each role can do
@@ -54,20 +52,4 @@ const PERMISSIONS: Record<RoleName, string[]> = {
 
 export function hasPermission(role: RoleName, permission: string): boolean {
   return PERMISSIONS[role]?.includes(permission) ?? false;
-}
-
-export async function getUserRole(
-  userId: string,
-  workspaceId: string
-): Promise<RoleName | null> {
-  const workspaceUser = await prisma.workspaceUser.findFirst({
-    where: {
-      user_id: userId,
-      workspace_id: workspaceId,
-      deleted_at: null,
-    },
-    include: { role: { select: { name: true } } },
-  });
-
-  return (workspaceUser?.role.name as RoleName) ?? null;
 }

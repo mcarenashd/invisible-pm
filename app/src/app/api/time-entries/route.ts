@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionOrUnauthorized } from "@/lib/api-utils";
+import { getSessionOrUnauthorized, checkPermission } from "@/lib/api-utils";
 
 // GET /api/time-entries?user_id=xxx&task_id=xxx&from=date&to=date
 export async function GET(request: Request) {
@@ -8,7 +8,13 @@ export async function GET(request: Request) {
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("user_id") || session!.user.id;
+  let userId = searchParams.get("user_id") || session!.user.id;
+
+  // Consultor can only see their own entries
+  const { role } = await checkPermission(session!.user.id, "time-entry:read");
+  if (role === "Consultor") {
+    userId = session!.user.id;
+  }
   const taskId = searchParams.get("task_id");
   const from = searchParams.get("from");
   const to = searchParams.get("to");

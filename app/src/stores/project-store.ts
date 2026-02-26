@@ -9,6 +9,9 @@ interface ProjectSummary {
   end_date: string | null;
   total_budget: string | null;
   currency: string;
+  module_budget: boolean;
+  module_time: boolean;
+  module_workload: boolean;
   workspace_id: string;
   created_at: string;
   _count: { tasks: number };

@@ -40,9 +40,10 @@ interface TaskCardProps {
   task: TaskItem;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
   onClick?: () => void;
+  readOnly?: boolean;
 }
 
-export function TaskCard({ task, onDragStart, onClick }: TaskCardProps) {
+export function TaskCard({ task, onDragStart, onClick, readOnly }: TaskCardProps) {
   const [users, setUsers] = useState<UserOption[]>([]);
   const { updateTask, deleteTask } = useTaskStore();
 
@@ -64,12 +65,16 @@ export function TaskCard({ task, onDragStart, onClick }: TaskCardProps) {
 
   return (
     <Card
-      className="group relative cursor-pointer p-3 transition-shadow hover:shadow-md active:cursor-grabbing"
-      draggable
+      className={cn(
+        "group relative cursor-pointer p-3 transition-shadow hover:shadow-md",
+        !readOnly && "active:cursor-grabbing"
+      )}
+      draggable={!readOnly}
       onDragStart={(e) => onDragStart(e, task.id)}
       onClick={onClick}
     >
       {/* Actions menu */}
+      {!readOnly && (
       <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -136,8 +141,9 @@ export function TaskCard({ task, onDragStart, onClick }: TaskCardProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      )}
 
-      <p className="pr-6 text-sm font-medium">{task.title}</p>
+      <p className={cn("text-sm font-medium", !readOnly && "pr-6")}>{task.title}</p>
       {task.description && (
         <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
           {task.description}

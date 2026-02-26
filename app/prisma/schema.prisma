@@ -137,6 +137,11 @@ model Project {
   total_budget Decimal?      @db.Decimal(14, 2)
   currency     String        @default("USD") @db.VarChar(3)
 
+  // Phase 2: Module toggles (Progressive Disclosure)
+  module_budget   Boolean @default(false)
+  module_time     Boolean @default(true)
+  module_workload Boolean @default(false)
+
   workspace Workspace @relation(fields: [workspace_id], references: [id])
   tasks     Task[]
 

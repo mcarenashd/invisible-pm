@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionOrUnauthorized } from "@/lib/api-utils";
+import { getSessionOrUnauthorized, checkPermission } from "@/lib/api-utils";
 
 // GET /api/dashboard/stats
 export async function GET() {
@@ -61,11 +61,29 @@ export async function GET() {
       }),
     ]);
 
+  // Role-aware budget stats for managers
+  const { role } = await checkPermission(userId, "project:read");
+  let budgetStats = null;
+
+  if (role === "Admin" || role === "PM") {
+    const budgetProjects = await prisma.project.findMany({
+      where: { deleted_at: null, status: "ACTIVE", module_budget: true },
+      select: { total_budget: true },
+    });
+    const totalBudget = budgetProjects.reduce(
+      (sum, p) => sum + Number(p.total_budget || 0),
+      0
+    );
+    budgetStats = { totalBudget, projectCount: budgetProjects.length };
+  }
+
   return NextResponse.json({
     activeProjects,
     pendingTasks,
     hoursThisWeek: Number(hoursThisWeek._sum.hours || 0),
     teamMembers,
     recentTasks,
+    role,
+    budgetStats,
   });
 }

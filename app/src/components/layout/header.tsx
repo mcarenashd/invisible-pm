@@ -3,6 +3,7 @@
 import { signOut, useSession } from "next-auth/react";
 import { LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePermissions } from "@/hooks/use-permissions";
 
 function getInitials(name: string): string {
   return name
@@ -22,6 +24,7 @@ function getInitials(name: string): string {
 
 export function Header() {
   const { data: session } = useSession();
+  const { role } = usePermissions();
 
   return (
     <header className="flex h-14 items-center justify-between border-b bg-background px-6">
@@ -37,6 +40,11 @@ export function Header() {
           <span className="text-sm font-medium">
             {session?.user?.name ?? "Usuario"}
           </span>
+          {role && (
+            <Badge variant="outline" className="text-[10px]">
+              {role}
+            </Badge>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <div className="px-2 py-1.5">

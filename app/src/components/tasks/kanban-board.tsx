@@ -6,6 +6,7 @@ import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { TaskCard } from "@/components/tasks/task-card";
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const COLUMNS = [
   { key: "BACKLOG", label: "Backlog", color: "border-t-gray-400" },
@@ -23,20 +24,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const { tasks, loading, fetchTasks, updateTask } = useTaskStore();
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { can, isReadOnly } = usePermissions();
+  const canCreateTask = can("task:create");
 
   useEffect(() => {
     fetchTasks(projectId);
   }, [projectId, fetchTasks]);
 
   function handleDragStart(e: React.DragEvent, taskId: string) {
+    if (isReadOnly) return;
     e.dataTransfer.setData("taskId", taskId);
   }
 
   function handleDragOver(e: React.DragEvent) {
+    if (isReadOnly) return;
     e.preventDefault();
   }
 
   async function handleDrop(e: React.DragEvent, newStatus: string) {
+    if (isReadOnly) return;
     e.preventDefault();
     const taskId = e.dataTransfer.getData("taskId");
     if (taskId) {
@@ -75,10 +81,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                   {columnTasks.length}
                 </span>
               </div>
-              <CreateTaskDialog
-                projectId={projectId}
-                defaultStatus={column.key}
-              />
+              {canCreateTask && (
+                <CreateTaskDialog
+                  projectId={projectId}
+                  defaultStatus={column.key}
+                />
+              )}
             </div>
 
             {/* Cards */}
@@ -88,6 +96,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                   key={task.id}
                   task={task}
                   onDragStart={handleDragStart}
+                  readOnly={isReadOnly}
                   onClick={() => {
                     setSelectedTask(task);
                     setSheetOpen(true);

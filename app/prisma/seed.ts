@@ -101,6 +101,48 @@ async function main() {
     }
   }
 
+  // Additional test users (PM, Consultor, Cliente)
+  console.log("Seeding additional test users...");
+  const workspace = await prisma.workspace.findFirst({
+    where: { domain: "invisiblepm.dev", deleted_at: null },
+  });
+
+  if (workspace) {
+    const testUsers = [
+      { email: "pm@invisiblepm.dev", name: "PM Dev", role: "PM" },
+      { email: "consultor@invisiblepm.dev", name: "Consultor Dev", role: "Consultor" },
+      { email: "cliente@invisiblepm.dev", name: "Cliente Dev", role: "Cliente" },
+    ];
+
+    for (const tu of testUsers) {
+      const existingTu = await prisma.user.findUnique({ where: { email: tu.email } });
+      if (!existingTu) {
+        const hash = await bcrypt.hash("test123!", 12);
+        const newUser = await prisma.user.create({
+          data: {
+            email: tu.email,
+            password_hash: hash,
+            full_name: tu.name,
+            is_active: true,
+          },
+        });
+        const role = await prisma.role.findUnique({ where: { name: tu.role } });
+        if (role) {
+          await prisma.workspaceUser.create({
+            data: {
+              workspace_id: workspace.id,
+              user_id: newUser.id,
+              role_id: role.id,
+            },
+          });
+        }
+        console.log(`  Created user: ${tu.email} (role: ${tu.role}, password: test123!)`);
+      } else {
+        console.log(`  User already exists: ${tu.email}`);
+      }
+    }
+  }
+
   console.log("Seed completed.");
 }
 

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface TimeEntryItem {
   id: string;
@@ -28,6 +29,9 @@ interface TimeEntryItem {
 export default function TimeEntriesPage() {
   const [entries, setEntries] = useState<TimeEntryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { can } = usePermissions();
+  const canCreate = can("time-entry:create");
+  const canDelete = can("time-entry:delete");
 
   const fetchEntries = useCallback(async () => {
     setLoading(true);
@@ -66,7 +70,7 @@ export default function TimeEntriesPage() {
             {totalHours.toFixed(1)}h registradas en total
           </p>
         </div>
-        <LogTimeDialog onCreated={fetchEntries} />
+        {canCreate && <LogTimeDialog onCreated={fetchEntries} />}
       </div>
 
       {loading ? (
@@ -103,13 +107,15 @@ export default function TimeEntriesPage() {
                       {Number(entry.hours).toFixed(1)}h
                     </span>
                   </CardContent>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(entry.id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-muted-foreground" />
-                  </Button>
+                  {canDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(entry.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
             </Card>

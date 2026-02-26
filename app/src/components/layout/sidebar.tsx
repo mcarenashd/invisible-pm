@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const navigation = [
   {
@@ -34,17 +35,24 @@ const navigation = [
     name: "Registro de Horas",
     href: "/dashboard/time-entries",
     icon: Clock,
+    requiredPermission: "time-entry:read",
   },
   {
     name: "Configuración",
     href: "/dashboard/settings",
     icon: Settings,
+    requiredPermission: "workspace:manage",
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { can, loaded } = usePermissions();
+
+  const visibleNav = navigation.filter(
+    (item) => !item.requiredPermission || !loaded || can(item.requiredPermission)
+  );
 
   return (
     <aside
@@ -64,7 +72,7 @@ export function Sidebar() {
 
       {/* Nav */}
       <nav className="flex-1 space-y-1 p-2">
-        {navigation.map((item) => {
+        {visibleNav.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
 

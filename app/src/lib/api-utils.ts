@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { hasPermission, getUserRole, type RoleName } from "@/lib/permissions";
+import { hasPermission, type RoleName } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export async function getSessionOrUnauthorized() {
@@ -39,5 +39,21 @@ export function forbiddenResponse() {
   );
 }
 
+export async function getUserRole(
+  userId: string,
+  workspaceId: string
+): Promise<RoleName | null> {
+  const workspaceUser = await prisma.workspaceUser.findFirst({
+    where: {
+      user_id: userId,
+      workspace_id: workspaceId,
+      deleted_at: null,
+    },
+    include: { role: { select: { name: true } } },
+  });
+
+  return (workspaceUser?.role.name as RoleName) ?? null;
+}
+
 // Re-export for convenience
-export { getUserRole, hasPermission, type RoleName } from "@/lib/permissions";
+export { hasPermission, type RoleName } from "@/lib/permissions";

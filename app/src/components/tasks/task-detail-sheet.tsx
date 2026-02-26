@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,22 @@ import {
 } from "@/components/ui/select";
 import { useTaskStore, type TaskItem } from "@/stores/task-store";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
+
+const STATUS_LABELS: Record<string, string> = {
+  BACKLOG: "Backlog",
+  TODO: "Por hacer",
+  IN_PROGRESS: "En progreso",
+  IN_REVIEW: "En revisión",
+  DONE: "Hecho",
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+  LOW: "Baja",
+  MEDIUM: "Media",
+  HIGH: "Alta",
+  URGENT: "Urgente",
+};
 
 interface UserOption {
   id: string;
@@ -50,6 +67,12 @@ export function TaskDetailSheet({
   const [saving, setSaving] = useState(false);
 
   const { updateTask } = useTaskStore();
+  const { isReadOnly, isRole, userId } = usePermissions();
+
+  // Consultor can only edit own tasks
+  const isConsultor = isRole("Consultor");
+  const isOwnTask = task?.assignee_id === userId;
+  const canEdit = !isReadOnly && (!isConsultor || isOwnTask);
 
   useEffect(() => {
     if (task) {
@@ -94,6 +117,84 @@ export function TaskDetailSheet({
   }
 
   if (!task) return null;
+
+  // Read-only view for Cliente or Consultor viewing other's tasks
+  if (!canEdit) {
+    return (
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
+          <SheetHeader>
+            <SheetTitle>Detalle de tarea</SheetTitle>
+            <SheetDescription>
+              Creada el{" "}
+              {new Date(task.created_at).toLocaleDateString("es-ES", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-4 px-4">
+            <div className="space-y-1">
+              <Label className="text-xs text-muted-foreground">Título</Label>
+              <p className="text-sm font-medium">{task.title}</p>
+            </div>
+
+            {task.description && (
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Descripción</Label>
+                <p className="text-sm">{task.description}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Estado</Label>
+                <p className="text-sm">{STATUS_LABELS[task.status] || task.status}</p>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Prioridad</Label>
+                <Badge variant="secondary" className="text-xs">
+                  {PRIORITY_LABELS[task.priority] || task.priority}
+                </Badge>
+              </div>
+            </div>
+
+            {task.assignee && (
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Asignado a</Label>
+                <p className="text-sm">{task.assignee.full_name}</p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              {task.estimated_hours && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Horas estimadas</Label>
+                  <p className="text-sm">{task.estimated_hours}h</p>
+                </div>
+              )}
+              {task.due_date && (
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Fecha límite</Label>
+                  <p className="text-sm">
+                    {new Date(task.due_date).toLocaleDateString("es-ES")}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Cerrar
+              </Button>
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
