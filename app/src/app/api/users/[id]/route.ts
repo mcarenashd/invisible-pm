@@ -19,7 +19,7 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { hourly_rate, role_name } = body;
+  const { hourly_rate, role_name, is_active } = body;
 
   // Verify user exists
   const user = await prisma.user.findFirst({
@@ -76,6 +76,21 @@ export async function PATCH(
     }
   }
 
+  // Update is_active if provided
+  if (is_active !== undefined) {
+    if (id === session!.user.id) {
+      return NextResponse.json(
+        { error: "No puedes desactivarte a ti mismo" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: { is_active: Boolean(is_active) },
+    });
+  }
+
   // Audit log
   await prisma.auditLog.create({
     data: {
@@ -86,6 +101,7 @@ export async function PATCH(
       changes: {
         ...(hourly_rate !== undefined && { hourly_rate }),
         ...(role_name && { role_name }),
+        ...(is_active !== undefined && { is_active }),
       },
     },
   });

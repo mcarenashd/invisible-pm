@@ -109,12 +109,19 @@ export function SettingsContent() {
                 {members.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
+                    className={`flex items-center justify-between rounded-lg border p-3${!member.is_active ? " opacity-50" : ""}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">
-                        {member.full_name}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">
+                          {member.full_name}
+                        </p>
+                        {!member.is_active && (
+                          <Badge variant="destructive" className="text-[10px]">
+                            Inactivo
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {member.email}
                       </p>

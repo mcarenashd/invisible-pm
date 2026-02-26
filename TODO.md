@@ -161,15 +161,32 @@
 - [x] 32 tests totales pasando, build exitoso
 - [x] Página raíz `/` redirige a `/dashboard` (eliminado boilerplate Next.js)
 
-### Pendientes (Fase 2.5 — Polish & Gaps funcionales)
-> Deuda técnica/UX a resolver antes o durante Fase 3
-
+### Fase 2.5 — Polish & Gaps funcionales
 - [x] Página de Configuración (`/dashboard/settings`) — gestión de workspace *(resuelto en Fase 3)*
 - [x] Gestión de miembros del workspace (listar, cambiar rol, cambiar tarifa) *(resuelto en Fase 3)*
-- [ ] Invitar / desactivar miembros del workspace
-- [ ] Página "Mi perfil" — editar nombre, email, contraseña
-- [ ] Link "Mi perfil" en dropdown del header funcional
-- [ ] Página 404 personalizada (actualmente muestra default Next.js)
+- [x] Desactivar / reactivar miembros del workspace (Switch en member-edit-dialog + badge "Inactivo")
+- [x] Página "Mi perfil" (`/dashboard/profile`) — editar nombre, email, cambiar contraseña
+- [x] API `PATCH /api/me` — actualizar nombre y email propios
+- [x] API `PATCH /api/me/password` — cambiar contraseña (verifica actual con bcrypt)
+- [x] Link "Mi perfil" en dropdown del header funcional → `/dashboard/profile`
+- [x] Página 404 personalizada (`src/app/not-found.tsx`)
+- [x] `PATCH /api/users/[id]` extendido con `is_active` + protección contra auto-desactivación
+- [x] Integration tests `profile.test.ts` (5 tests: update name, email uniqueness, password change, toggle is_active, inactive login check)
+- [x] 47 tests pasando (10 archivos), build exitoso
+- [ ] Invitar nuevos miembros al workspace (pendiente)
+
+#### Archivos nuevos (4)
+- `src/app/api/me/password/route.ts` — Cambio de contraseña
+- `src/app/dashboard/profile/page.tsx` — Página perfil (wrapper)
+- `src/components/profile/profile-content.tsx` — Contenido perfil (client)
+- `src/app/not-found.tsx` — Página 404 personalizada
+
+#### Archivos modificados (5)
+- `src/app/api/me/route.ts` — +PATCH handler (name, email)
+- `src/app/api/users/[id]/route.ts` — +is_active en PATCH
+- `src/components/layout/header.tsx` — Link "Mi perfil" → /dashboard/profile
+- `src/components/settings/settings-content.tsx` — Badge inactivo + opacity
+- `src/components/settings/member-edit-dialog.tsx` — Switch is_active
 
 ---
 

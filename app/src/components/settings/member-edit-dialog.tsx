@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 interface RoleOption {
@@ -53,6 +54,7 @@ export function MemberEditDialog({
   const [hourlyRate, setHourlyRate] = useState(
     member.hourly_rate ? String(member.hourly_rate) : ""
   );
+  const [isActive, setIsActive] = useState(member.is_active);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export function MemberEditDialog({
   useEffect(() => {
     setRoleName(member.role.name);
     setHourlyRate(member.hourly_rate ? String(member.hourly_rate) : "");
+    setIsActive(member.is_active);
   }, [member]);
 
   async function handleSave() {
@@ -78,6 +81,9 @@ export function MemberEditDialog({
     const oldRate = member.hourly_rate ? Number(member.hourly_rate) : null;
     if (newRate !== oldRate) {
       body.hourly_rate = newRate;
+    }
+    if (isActive !== member.is_active) {
+      body.is_active = isActive;
     }
 
     if (Object.keys(body).length === 0) {
@@ -142,6 +148,15 @@ export function MemberEditDialog({
               value={hourlyRate}
               onChange={(e) => setHourlyRate(e.target.value)}
               placeholder="0.00"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Label htmlFor="active">Usuario activo</Label>
+            <Switch
+              id="active"
+              checked={isActive}
+              onCheckedChange={setIsActive}
             />
           </div>
 

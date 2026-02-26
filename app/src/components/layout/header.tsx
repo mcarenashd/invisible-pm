@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { LogOut, User } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -54,9 +55,11 @@ export function Header() {
             </p>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <User className="mr-2 h-4 w-4" />
-            Mi perfil
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/profile">
+              <User className="mr-2 h-4 w-4" />
+              Mi perfil
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
