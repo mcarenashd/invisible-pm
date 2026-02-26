@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 interface TaskOption {
   id: string;
@@ -78,6 +79,9 @@ export function LogTimeDialog({ onCreated }: LogTimeDialogProps) {
       setHours("");
       setOpen(false);
       onCreated?.();
+      toast.success("Horas registradas");
+    } else {
+      toast.error("Error al registrar horas");
     }
   }
 

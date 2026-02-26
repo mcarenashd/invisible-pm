@@ -42,6 +42,10 @@
 - [x] Helpers: `resetDatabase()`, `getTestPrisma()`, `applyMigrations()`
 - [x] Integration tests auth-register (3 tests)
 - [x] Integration tests auth-login (6 tests)
+- [x] Integration tests projects CRUD (4 tests)
+- [x] Integration tests tasks CRUD (5 tests)
+- [x] Integration tests time-entries (4 tests)
+- [x] Integration tests permissions RBAC (7 tests)
 - [x] Playwright configurado para E2E (Chromium)
 - [x] E2E tests flujo auth completo (5 tests): redirect, navegación, registro, login, error
 - [x] Scripts npm: `test`, `test:watch`, `test:e2e`
@@ -104,6 +108,18 @@
 ### Frontend — Tareas (mejoras Fase 1b)
 - [x] TaskCard con menú: asignar usuario, desasignar, eliminar
 - [x] Dropdown dinámico de usuarios del workspace
+
+### Fase 1c — Polish & Completeness
+- [x] Task detail panel (Sheet lateral con edición completa de todos los campos)
+- [x] Dashboard con métricas reales (proyectos activos, tareas pendientes, horas semana, equipo)
+- [x] Tareas recientes del usuario en dashboard
+- [x] Edición de proyecto (dialog con nombre, descripción, estado, fechas, presupuesto, moneda)
+- [x] Eliminación de proyecto desde detalle (soft delete con confirmación)
+- [x] Metadata visual en header proyecto (fechas, presupuesto)
+- [x] Toast notifications (Sonner) en toda la app (crear, actualizar, eliminar)
+- [x] API `/api/dashboard/stats` (métricas agregadas)
+- [x] Integration tests: projects (4), tasks (5), time-entries (4), permissions (7)
+- [x] Test config: `fileParallelism: false` para evitar race conditions en BD
 
 ### Seed actualizado
 - [x] Workspace por defecto "Invisible PM" con admin asignado

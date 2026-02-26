@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTaskStore, type TaskItem } from "@/stores/task-store";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { TaskCard } from "@/components/tasks/task-card";
+import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { cn } from "@/lib/utils";
 
 const COLUMNS = [
@@ -20,6 +21,8 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const { tasks, loading, fetchTasks, updateTask } = useTaskStore();
+  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     fetchTasks(projectId);
@@ -85,12 +88,21 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                   key={task.id}
                   task={task}
                   onDragStart={handleDragStart}
+                  onClick={() => {
+                    setSelectedTask(task);
+                    setSheetOpen(true);
+                  }}
                 />
               ))}
             </div>
           </div>
         );
       })}
+      <TaskDetailSheet
+        task={selectedTask}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+      />
     </div>
   );
 }

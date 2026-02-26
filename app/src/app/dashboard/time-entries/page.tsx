@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
+import { toast } from "sonner";
 
 interface TimeEntryItem {
   id: string;
@@ -45,6 +46,9 @@ export default function TimeEntriesPage() {
     const res = await fetch(`/api/time-entries/${id}`, { method: "DELETE" });
     if (res.ok) {
       setEntries(entries.filter((e) => e.id !== id));
+      toast.success("Registro eliminado");
+    } else {
+      toast.error("Error al eliminar registro");
     }
   }
 

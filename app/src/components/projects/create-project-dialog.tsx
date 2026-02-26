@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { useProjectStore } from "@/stores/project-store";
+import { toast } from "sonner";
 
 interface CreateProjectDialogProps {
   workspaceId: string;
@@ -41,6 +42,9 @@ export function CreateProjectDialog({ workspaceId }: CreateProjectDialogProps) {
       setName("");
       setDescription("");
       setOpen(false);
+      toast.success("Proyecto creado");
+    } else {
+      toast.error("Error al crear el proyecto");
     }
   }
 

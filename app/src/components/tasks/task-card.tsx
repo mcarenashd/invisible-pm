@@ -14,6 +14,7 @@ import {
 import { MoreHorizontal, UserPlus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTaskStore, type TaskItem } from "@/stores/task-store";
+import { toast } from "sonner";
 
 const PRIORITY_COLORS: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-600",
@@ -38,9 +39,10 @@ interface UserOption {
 interface TaskCardProps {
   task: TaskItem;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
+  onClick?: () => void;
 }
 
-export function TaskCard({ task, onDragStart }: TaskCardProps) {
+export function TaskCard({ task, onDragStart, onClick }: TaskCardProps) {
   const [users, setUsers] = useState<UserOption[]>([]);
   const { updateTask, deleteTask } = useTaskStore();
 
@@ -62,14 +64,18 @@ export function TaskCard({ task, onDragStart }: TaskCardProps) {
 
   return (
     <Card
-      className="group relative p-3 active:cursor-grabbing"
+      className="group relative cursor-pointer p-3 transition-shadow hover:shadow-md active:cursor-grabbing"
       draggable
       onDragStart={(e) => onDragStart(e, task.id)}
+      onClick={onClick}
     >
       {/* Actions menu */}
       <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
         <DropdownMenu>
-          <DropdownMenuTrigger className="rounded p-1 hover:bg-muted">
+          <DropdownMenuTrigger
+            className="rounded p-1 hover:bg-muted"
+            onClick={(e) => e.stopPropagation()}
+          >
             <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -82,11 +88,13 @@ export function TaskCard({ task, onDragStart }: TaskCardProps) {
                 {users.map((user) => (
                   <DropdownMenuItem
                     key={user.id}
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       updateTask(task.id, {
                         assignee_id: user.id,
-                      } as Partial<TaskItem>)
-                    }
+                      } as Partial<TaskItem>);
+                      toast.success(`Asignado a ${user.full_name}`);
+                    }}
                   >
                     <UserPlus className="mr-2 h-3.5 w-3.5" />
                     {user.full_name}
@@ -99,11 +107,13 @@ export function TaskCard({ task, onDragStart }: TaskCardProps) {
                 ))}
                 {task.assignee_id && (
                   <DropdownMenuItem
-                    onClick={() =>
+                    onClick={(e) => {
+                      e.stopPropagation();
                       updateTask(task.id, {
                         assignee_id: null,
-                      } as unknown as Partial<TaskItem>)
-                    }
+                      } as unknown as Partial<TaskItem>);
+                      toast.success("Asignación removida");
+                    }}
                   >
                     <UserPlus className="mr-2 h-3.5 w-3.5" />
                     Sin asignar
@@ -114,7 +124,11 @@ export function TaskCard({ task, onDragStart }: TaskCardProps) {
             )}
             <DropdownMenuItem
               className="text-destructive"
-              onClick={() => deleteTask(task.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteTask(task.id);
+                toast.success("Tarea eliminada");
+              }}
             >
               <Trash2 className="mr-2 h-3.5 w-3.5" />
               Eliminar

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 import { useTaskStore } from "@/stores/task-store";
+import { toast } from "sonner";
 
 interface CreateTaskDialogProps {
   projectId: string;
@@ -58,6 +59,9 @@ export function CreateTaskDialog({
       setPriority("MEDIUM");
       setStatus(defaultStatus || "BACKLOG");
       setOpen(false);
+      toast.success("Tarea creada");
+    } else {
+      toast.error("Error al crear la tarea");
     }
   }
 
