@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { usePermissions } from "@/hooks/use-permissions";
 import { formatCurrency } from "@/lib/format";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { CalendarSuggestions } from "@/components/integrations/calendar-suggestions";
 
 const STATUS_LABELS: Record<string, string> = {
   BACKLOG: "Backlog",
@@ -61,6 +62,7 @@ interface DashboardStats {
   recentTasks: RecentTask[];
   role: string | null;
   budgetStats: BudgetStats | null;
+  hasMicrosoft: boolean;
 }
 
 interface DashboardContentProps {
@@ -198,6 +200,9 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           </Card>
         </div>
       )}
+
+      {/* Calendar suggestions (Microsoft linked users) */}
+      {stats?.hasMicrosoft && <CalendarSuggestions />}
 
       {/* Recent tasks */}
       <Card>

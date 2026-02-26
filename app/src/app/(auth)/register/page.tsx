@@ -131,6 +131,12 @@ export default function RegisterPage() {
                 Inicia sesión
               </Link>
             </p>
+            <p className="text-center text-sm text-muted-foreground">
+              ¿Tienes cuenta Microsoft?{" "}
+              <Link href="/login" className="text-primary underline">
+                Inicia sesión directamente
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

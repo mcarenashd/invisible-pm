@@ -252,26 +252,89 @@
 
 ---
 
-## FASE 4: Invisible PM — Integración MS Graph
-> No iniciar hasta completar Fase 3
+## FASE 4: Invisible PM — Integración Microsoft (SSO + MS Graph)
 
-- [ ] Conexión Microsoft Graph API
-- [ ] Evento Calendario: leer Outlook/Teams → sugerir registros de tiempo
+### Batch A — SSO con Microsoft Entra ID
+- [x] Schema: modelo `Account` para OAuth tokens + relación en User
+- [x] Migración `add_account_model` aplicada
+- [x] Instalar `@auth/prisma-adapter` y `@microsoft/microsoft-graph-client`
+- [x] Reescritura `auth.ts` con provider Microsoft Entra ID (condicional por env vars)
+- [x] Callback `signIn`: provisionar usuario nuevo → crear User + WorkspaceUser (Consultor en workspace default)
+- [x] Callback `jwt`: capturar `access_token` del provider Microsoft
+- [x] Bloqueo de usuarios inactivos en flujo SSO
+- [x] Upsert Account record con tokens OAuth en cada login
+- [x] Variables de entorno en `.env` + `.env.example` creado
+- [x] Login page: botón "Iniciar sesión con Microsoft" con icono SVG + separador "o"
+- [x] Register page: link "¿Tienes cuenta Microsoft? Inicia sesión directamente"
+
+### Batch B — MS Graph Client Foundation
+- [x] `src/lib/graph-client.ts` — wrapper tipado para `@microsoft/microsoft-graph-client`
+- [x] `src/lib/graph-token.ts` — `getAccessToken(userId)` con refresh automático + `hasMicrosoftAccount(userId)`
+- [x] `GET /api/integrations/me` — test endpoint que llama Graph `/me` para verificar conexión
+
+### Batch C — Calendario → Sugerencias de Time Entries
+- [x] `GET /api/integrations/calendar?from=date&to=date` — leer eventos de Outlook (filtra all-day, calcula duración)
+- [x] `GET /api/integrations/calendar/suggestions` — eventos últimos 7 días sin time entry (dedup por external_event_id)
+- [x] `POST /api/integrations/calendar/accept` — aceptar sugerencia → crear time entry con source `OUTLOOK` + rate_snapshot
+- [x] Componente `CalendarSuggestions` — panel con eventos pendientes, selector de tarea, aceptar/descartar
+- [x] Dashboard: `hasMicrosoft` flag en stats API + `CalendarSuggestions` condicional
+
+### Batch D — Tests + Build
+- [x] Integration tests `microsoft-sso.test.ts` (8 tests: Account CRUD, unique constraint, cascade delete, token upsert, SSO provisioning, OUTLOOK source, dedup, soft-delete dedup)
+- [x] Build exitoso (`npx next build`)
+- [x] 55 tests pasando (11 archivos)
+
+### Decisión Arquitectónica: SSO Condicional
+> El provider Microsoft Entra ID solo se carga si las variables `AUTH_MICROSOFT_ENTRA_ID_ID` están configuradas.
+> Login con email/contraseña se mantiene como opción principal. Microsoft SSO es complementario.
+> Nuevos usuarios SSO se auto-asignan al workspace default con rol Consultor.
+> Los tokens OAuth se almacenan en la tabla `Account` y se refrescan automáticamente en `graph-token.ts`.
+
+### Archivos nuevos (9)
+- `src/lib/graph-client.ts` — Client de MS Graph
+- `src/lib/graph-token.ts` — Accessor + refresh de tokens
+- `src/app/api/integrations/me/route.ts` — Test Graph connection
+- `src/app/api/integrations/calendar/route.ts` — Leer eventos calendario
+- `src/app/api/integrations/calendar/suggestions/route.ts` — Sugerencias de time entries
+- `src/app/api/integrations/calendar/accept/route.ts` — Aceptar sugerencia
+- `src/components/integrations/calendar-suggestions.tsx` — UI sugerencias
+- `.env.example` — Template de variables de entorno
+- `tests/integration/microsoft-sso.test.ts` — Tests SSO + Graph
+
+### Archivos modificados (5)
+- `prisma/schema.prisma` — +Account model, +relación accounts en User
+- `src/lib/auth.ts` — +Entra ID provider, +signIn/jwt callbacks para OAuth
+- `src/app/(auth)/login/page.tsx` — +botón "Iniciar sesión con Microsoft"
+- `src/app/(auth)/register/page.tsx` — +link a SSO
+- `src/components/dashboard/dashboard-content.tsx` — +CalendarSuggestions condicional
+- `src/app/api/dashboard/stats/route.ts` — +hasMicrosoft flag
+
+### Prerrequisito del usuario
+> Para probar el SSO, el usuario debe crear un Azure AD App Registration en portal.azure.com:
+> 1. Microsoft Entra ID → App registrations → New registration
+> 2. Redirect URI: `http://localhost:3000/api/auth/callback/microsoft-entra-id`
+> 3. API permissions: User.Read + Calendars.Read (delegated)
+> 4. Configurar variables en `.env`:
+>    - `AUTH_MICROSOFT_ENTRA_ID_ID`, `AUTH_MICROSOFT_ENTRA_ID_SECRET`, `AUTH_MICROSOFT_ENTRA_ID_TENANT_ID`
+
+---
+
+## FASE 5: Invisible PM — Expansión MS Graph (pendiente)
 - [ ] Evento Archivos: detectar aprobaciones en SharePoint → cambiar estado tarea
 - [ ] Evento Correos: analizar hilos etiquetados → registrar aprobaciones
 
 ---
 
-## FASE 5: Capa de IA
-> No iniciar hasta completar Fase 4
+## FASE 6: Capa de IA
+> No iniciar hasta completar Fase 5
 
 - [ ] Creación de proyectos por lenguaje natural
 - [ ] Agente de extracción de correos → triggers automáticos
 
 ---
 
-## FASE 6: Pruebas, Auditoría y Seguridad
-> No iniciar hasta completar Fase 5
+## FASE 7: Pruebas, Auditoría y Seguridad
+> No iniciar hasta completar Fase 6
 
 - [ ] Pruebas de carga
 - [ ] Validación de logs de auditoría

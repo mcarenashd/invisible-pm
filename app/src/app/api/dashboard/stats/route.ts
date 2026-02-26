@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionOrUnauthorized, checkPermission } from "@/lib/api-utils";
+import { hasMicrosoftAccount } from "@/lib/graph-token";
 
 // GET /api/dashboard/stats
 export async function GET() {
@@ -115,6 +116,8 @@ export async function GET() {
     };
   }
 
+  const hasMicrosoft = await hasMicrosoftAccount(userId);
+
   return NextResponse.json({
     activeProjects,
     pendingTasks,
@@ -123,5 +126,6 @@ export async function GET() {
     recentTasks,
     role,
     budgetStats,
+    hasMicrosoft,
   });
 }
