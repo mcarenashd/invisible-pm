@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { usePermissions } from "@/hooks/use-permissions";
+import { formatCurrency } from "@/lib/format";
+import { ProgressBar } from "@/components/ui/progress-bar";
 
 const STATUS_LABELS: Record<string, string> = {
   BACKLOG: "Backlog",
@@ -45,6 +47,9 @@ interface RecentTask {
 
 interface BudgetStats {
   totalBudget: number;
+  totalConsumed: number;
+  remaining: number;
+  weeklyBurn: number;
   projectCount: number;
 }
 
@@ -101,13 +106,11 @@ export function DashboardContent({ userName }: DashboardContentProps) {
     });
   }
 
-  if (isManager && stats?.budgetStats) {
-    statCards.push({
-      name: "Presupuesto activo",
-      value: `$${(stats.budgetStats.totalBudget).toLocaleString("es-ES")}`,
-      icon: DollarSign,
-    });
-  }
+  const budget = stats?.budgetStats;
+  const percentageUsed =
+    budget && budget.totalBudget > 0
+      ? Math.min(Math.round((budget.totalConsumed / budget.totalBudget) * 100), 100)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -136,6 +139,65 @@ export function DashboardContent({ userName }: DashboardContentProps) {
           </Card>
         ))}
       </div>
+
+      {/* Financial cards (managers only) */}
+      {isManager && budget && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium">
+                Presupuesto total
+              </CardDescription>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl">
+                {loading ? "—" : formatCurrency(budget.totalBudget)}
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {budget.projectCount} proyecto{budget.projectCount !== 1 ? "s" : ""} con presupuesto
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium">
+                Costo consumido
+              </CardDescription>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl">
+                {loading ? "—" : formatCurrency(budget.totalConsumed)}
+              </CardTitle>
+              <div className="mt-2">
+                <ProgressBar value={percentageUsed} />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {percentageUsed}% del presupuesto — Restante: {formatCurrency(budget.remaining)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardDescription className="text-sm font-medium">
+                Burn rate semanal
+              </CardDescription>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <CardTitle className="text-2xl">
+                {loading ? "—" : formatCurrency(budget.weeklyBurn)}
+              </CardTitle>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Últimos 7 días
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Recent tasks */}
       <Card>

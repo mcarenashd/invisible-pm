@@ -204,6 +204,7 @@ model TimeEntry {
   hours             Decimal         @db.Decimal(5, 2)
   source            TimeEntrySource @default(MANUAL)
   external_event_id String?
+  rate_snapshot     Decimal?        @db.Decimal(10, 2)
 
   task Task @relation(fields: [task_id], references: [id])
   user User @relation(fields: [user_id], references: [id])

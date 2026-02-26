@@ -161,14 +161,77 @@
 - [x] 32 tests totales pasando, build exitoso
 - [x] Página raíz `/` redirige a `/dashboard` (eliminado boilerplate Next.js)
 
+### Pendientes (Fase 2.5 — Polish & Gaps funcionales)
+> Deuda técnica/UX a resolver antes o durante Fase 3
+
+- [x] Página de Configuración (`/dashboard/settings`) — gestión de workspace *(resuelto en Fase 3)*
+- [x] Gestión de miembros del workspace (listar, cambiar rol, cambiar tarifa) *(resuelto en Fase 3)*
+- [ ] Invitar / desactivar miembros del workspace
+- [ ] Página "Mi perfil" — editar nombre, email, contraseña
+- [ ] Link "Mi perfil" en dropdown del header funcional
+- [ ] Página 404 personalizada (actualmente muestra default Next.js)
+
 ---
 
 ## FASE 3: Módulo de Finanzas y Recursos
-> No iniciar hasta completar Fase 2
 
-- [ ] Tablas de presupuesto (Planificado vs. Consumido)
-- [ ] Costo por hora asignado a perfiles
-- [ ] Timesheets manuales
+### Batch A — Foundation (Schema + Settings + User Management)
+- [x] Schema: `rate_snapshot Decimal?` en TimeEntry + migración `add_rate_snapshot`
+- [x] Permiso `budget:read` agregado a Admin y PM en `permissions.ts`
+- [x] API `GET /api/roles` — lista de roles para dropdown en settings
+- [x] API `PATCH /api/users/[id]` — actualizar `hourly_rate` y/o rol (requiere `user:manage`)
+- [x] Instalar Shadcn Tabs (`npx shadcn@latest add tabs`)
+- [x] Página de Configuración `/dashboard/settings` con Tabs (General + Miembros)
+- [x] Componente `settings-content.tsx` — tabla de miembros con rol, tarifa, botón editar
+- [x] Componente `member-edit-dialog.tsx` — dialog para cambiar rol y tarifa
+- [x] `rate_snapshot` capturado en POST `/api/time-entries` desde `user.hourly_rate`
+- [x] `workspaceName` expuesto en `usePermissions()` hook
+
+### Batch B — Budget Tracking por Proyecto
+- [x] API `GET /api/projects/[id]/budget` — presupuesto vs consumido, desglose por usuario
+- [x] Utilidades `src/lib/format.ts` — `formatCurrency()`, `formatHours()`, `calcPercentage()`
+- [x] Componente `progress-bar.tsx` — barra Tailwind con colores por nivel (verde/amarillo/rojo)
+- [x] Componente `budget-panel.tsx` — panel con resumen + progreso + tabla desglose
+- [x] `BudgetPanel` integrado en `/dashboard/projects/[id]` (entre header y kanban)
+
+### Batch C — Dashboard Financiero + Time Entries con Costo
+- [x] GET `/api/time-entries` enriquecido con `cost: hours * rate_snapshot`
+- [x] GET `/api/dashboard/stats` — `budgetStats` con `totalConsumed`, `remaining`, `weeklyBurn`
+- [x] Dashboard: 3 cards financieras (Presupuesto total, Costo consumido con progress bar, Burn rate semanal)
+- [x] Time entries: costo por entrada + costo total en header (solo managers)
+
+### Batch D — Tests + Build
+- [x] Integration tests `financial.test.ts` (5 tests: rate_snapshot, cost calc, multi-user, rate change protection, soft delete exclusion)
+- [x] Integration tests `user-management.test.ts` (5 tests: update rate, assign role, change role, list members, audit log)
+- [x] Build exitoso (`npx next build`)
+- [x] 42 tests pasando (9 archivos)
+
+### Decisión Arquitectónica: Rate Snapshot
+> Al crear una time entry, se captura el `hourly_rate` del usuario en `rate_snapshot`.
+> Esto protege contra cambios retroactivos de tarifa. El costo se computa server-side como `hours * rate_snapshot`.
+
+### Archivos nuevos (12)
+- `src/app/api/users/[id]/route.ts` — PATCH user (rate + role)
+- `src/app/api/projects/[id]/budget/route.ts` — GET budget tracking
+- `src/app/api/roles/route.ts` — GET lista de roles
+- `src/app/dashboard/settings/page.tsx` — Página settings
+- `src/components/settings/settings-content.tsx` — Tabs: General + Miembros
+- `src/components/settings/member-edit-dialog.tsx` — Dialog editar miembro
+- `src/components/projects/budget-panel.tsx` — Panel presupuesto proyecto
+- `src/components/ui/progress-bar.tsx` — Barra de progreso
+- `src/components/ui/tabs.tsx` — Shadcn tabs
+- `src/lib/format.ts` — Formateo moneda/horas
+- `tests/integration/financial.test.ts` — Tests financieros
+- `tests/integration/user-management.test.ts` — Tests gestión usuarios
+
+### Archivos modificados (7)
+- `prisma/schema.prisma` — +rate_snapshot en TimeEntry
+- `src/lib/permissions.ts` — +budget:read
+- `src/app/api/time-entries/route.ts` — rate snapshot en POST, cost en GET
+- `src/app/api/dashboard/stats/route.ts` — totalConsumed, remaining, weeklyBurn
+- `src/app/dashboard/projects/[id]/page.tsx` — +BudgetPanel
+- `src/app/dashboard/time-entries/page.tsx` — costo por entry (managers)
+- `src/components/dashboard/dashboard-content.tsx` — 3 cards financieras
 
 ---
 

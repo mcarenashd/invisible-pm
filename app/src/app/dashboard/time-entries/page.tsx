@@ -13,12 +13,15 @@ import {
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
+import { formatCurrency } from "@/lib/format";
 
 interface TimeEntryItem {
   id: string;
   date: string;
   hours: string;
   source: string;
+  cost: number | null;
+  rate_snapshot: string | null;
   task: {
     id: string;
     title: string;
@@ -29,7 +32,7 @@ interface TimeEntryItem {
 export default function TimeEntriesPage() {
   const [entries, setEntries] = useState<TimeEntryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { can } = usePermissions();
+  const { can, isManager } = usePermissions();
   const canCreate = can("time-entry:create");
   const canDelete = can("time-entry:delete");
 
@@ -61,6 +64,11 @@ export default function TimeEntriesPage() {
     0
   );
 
+  const totalCost = entries.reduce(
+    (sum, e) => sum + (e.cost ?? 0),
+    0
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -68,6 +76,9 @@ export default function TimeEntriesPage() {
           <h1 className="text-2xl font-bold">Registro de Horas</h1>
           <p className="text-muted-foreground">
             {totalHours.toFixed(1)}h registradas en total
+            {isManager && totalCost > 0 && (
+              <span> — Costo: {formatCurrency(totalCost)}</span>
+            )}
           </p>
         </div>
         {canCreate && <LogTimeDialog onCreated={fetchEntries} />}
@@ -102,10 +113,15 @@ export default function TimeEntriesPage() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-3">
-                  <CardContent className="p-0">
+                  <CardContent className="p-0 text-right">
                     <span className="text-lg font-semibold">
                       {Number(entry.hours).toFixed(1)}h
                     </span>
+                    {isManager && entry.cost != null && entry.cost > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        {formatCurrency(entry.cost)}
+                      </p>
+                    )}
                   </CardContent>
                   {canDelete && (
                     <Button

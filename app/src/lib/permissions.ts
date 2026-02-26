@@ -19,6 +19,7 @@ const PERMISSIONS: Record<RoleName, string[]> = {
     "user:read",
     "user:manage",
     "workspace:manage",
+    "budget:read",
   ],
   PM: [
     "project:create",
@@ -34,6 +35,7 @@ const PERMISSIONS: Record<RoleName, string[]> = {
     "time-entry:read-all",
     "time-entry:delete",
     "user:read",
+    "budget:read",
   ],
   Consultor: [
     "project:read",

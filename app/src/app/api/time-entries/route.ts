@@ -45,7 +45,15 @@ export async function GET(request: Request) {
     orderBy: { date: "desc" },
   });
 
-  return NextResponse.json(entries);
+  // Enrich with computed cost
+  const enriched = entries.map((e) => ({
+    ...e,
+    cost: e.rate_snapshot
+      ? Number(e.hours) * Number(e.rate_snapshot)
+      : null,
+  }));
+
+  return NextResponse.json(enriched);
 }
 
 // POST /api/time-entries
@@ -82,6 +90,12 @@ export async function POST(request: Request) {
     );
   }
 
+  // Snapshot the user's current hourly rate for cost calculation
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session!.user.id },
+    select: { hourly_rate: true },
+  });
+
   const entry = await prisma.timeEntry.create({
     data: {
       task_id,
@@ -89,6 +103,7 @@ export async function POST(request: Request) {
       date: new Date(date),
       hours: Number(hours),
       source: source || "MANUAL",
+      rate_snapshot: currentUser?.hourly_rate ?? null,
     },
     include: {
       task: {

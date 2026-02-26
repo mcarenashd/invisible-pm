@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { KanbanBoard } from "@/components/tasks/kanban-board";
 import { ProjectHeader } from "@/components/projects/project-header";
+import { BudgetPanel } from "@/components/projects/budget-panel";
 
 export default async function ProjectDetailPage({
   params,
@@ -36,6 +37,12 @@ export default async function ProjectDetailPage({
   return (
     <div className="space-y-6">
       <ProjectHeader project={projectData} />
+      <BudgetPanel
+        projectId={project.id}
+        totalBudget={project.total_budget ? Number(project.total_budget) : null}
+        currency={project.currency}
+        moduleBudget={project.module_budget}
+      />
       <KanbanBoard projectId={project.id} />
     </div>
   );

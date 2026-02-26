@@ -68,13 +68,51 @@ export async function GET() {
   if (role === "Admin" || role === "PM") {
     const budgetProjects = await prisma.project.findMany({
       where: { deleted_at: null, status: "ACTIVE", module_budget: true },
-      select: { total_budget: true },
+      select: { id: true, total_budget: true },
     });
+
     const totalBudget = budgetProjects.reduce(
       (sum, p) => sum + Number(p.total_budget || 0),
       0
     );
-    budgetStats = { totalBudget, projectCount: budgetProjects.length };
+
+    // Calculate total consumed cost across budget-enabled projects
+    const projectIds = budgetProjects.map((p) => p.id);
+    const allEntries = projectIds.length > 0
+      ? await prisma.timeEntry.findMany({
+          where: {
+            deleted_at: null,
+            task: {
+              deleted_at: null,
+              project_id: { in: projectIds },
+            },
+          },
+          select: { hours: true, rate_snapshot: true, date: true },
+        })
+      : [];
+
+    const totalConsumed = allEntries.reduce(
+      (sum, e) => sum + Number(e.hours) * Number(e.rate_snapshot ?? 0),
+      0
+    );
+
+    // Burn rate: cost in the last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const weeklyBurn = allEntries
+      .filter((e) => new Date(e.date) >= sevenDaysAgo)
+      .reduce(
+        (sum, e) => sum + Number(e.hours) * Number(e.rate_snapshot ?? 0),
+        0
+      );
+
+    budgetStats = {
+      totalBudget,
+      totalConsumed: Math.round(totalConsumed * 100) / 100,
+      remaining: Math.round((totalBudget - totalConsumed) * 100) / 100,
+      weeklyBurn: Math.round(weeklyBurn * 100) / 100,
+      projectCount: budgetProjects.length,
+    };
   }
 
   return NextResponse.json({

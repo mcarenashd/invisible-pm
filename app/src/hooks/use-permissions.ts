@@ -2,11 +2,12 @@ import { useAuthStore } from "@/stores/auth-store";
 import { hasPermission, type RoleName } from "@/lib/permissions";
 
 export function usePermissions() {
-  const { role, workspaceId, userId, loaded } = useAuthStore();
+  const { role, workspaceId, workspaceName, userId, loaded } = useAuthStore();
 
   return {
     role,
     workspaceId,
+    workspaceName,
     userId,
     loaded,
 
