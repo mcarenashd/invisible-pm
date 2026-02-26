@@ -56,37 +56,46 @@
 ## FASE 1: MVP Core "Modo Simple"
 
 ### API Routes (CRUD)
-- [ ] `api/workspaces` — CRUD de espacios de trabajo
-- [ ] `api/projects` — CRUD de proyectos
-- [ ] `api/tasks` — CRUD de tareas
-- [ ] `api/users` — gestión de usuarios
-- [ ] `api/time-entries` — registro de horas
+- [x] `api/workspaces` — GET (listar)
+- [x] `api/projects` — GET (listar con task count) + POST (crear con audit log)
+- [x] `api/projects/[id]` — GET (detalle con tareas) + PATCH (actualizar) + DELETE (soft delete)
+- [x] `api/tasks` — GET (por project_id) + POST (crear con auto-position y audit log)
+- [x] `api/tasks/[id]` — PATCH (actualizar status/priority/etc) + DELETE (soft delete)
+- [ ] `api/users` — gestión de usuarios (Fase 1b)
+- [ ] `api/time-entries` — registro de horas (Fase 1b)
+- [x] Helper `getSessionOrUnauthorized()` para auth en API Routes
 
 ### Frontend — Layout y Navegación
-- [ ] Layout principal (sidebar + header)
-- [ ] Navegación entre workspaces/proyectos
-- [ ] Componente de usuario/avatar
+- [x] Layout dashboard: sidebar colapsable + header con avatar/dropdown
+- [x] Sidebar: Dashboard, Proyectos, Registro de Horas, Configuración
+- [x] Header: avatar con iniciales, dropdown con perfil + cerrar sesión
+- [x] SessionProvider + TooltipProvider en root layout
+- [x] Título y metadata actualizados ("Invisible PM")
 
 ### Frontend — Proyectos
-- [ ] Vista lista de proyectos
-- [ ] Crear/editar proyecto (dialog)
-- [ ] Detalle de proyecto
+- [x] Vista lista de proyectos (cards con status badge y task count)
+- [x] Crear proyecto (dialog con nombre + descripción)
+- [x] Detalle de proyecto (header + Kanban board)
+- [x] Estado vacío cuando no hay proyectos
 
 ### Frontend — Tareas
-- [ ] Vista lista de tareas
-- [ ] Vista tablero Kanban (drag & drop)
-- [ ] Crear/editar tarea (dialog)
-- [ ] Asignación de usuario a tarea
+- [x] Vista tablero Kanban con 5 columnas (Backlog, Todo, In Progress, In Review, Done)
+- [x] Drag & drop nativo entre columnas (HTML5 DnD)
+- [x] Crear tarea (dialog con título, descripción, estado, prioridad)
+- [x] Cards con prioridad (badge color) y avatar de asignado
 
 ### Roles y Permisos
-- [ ] Sistema de roles básico (Admin, PM, Consultor, Cliente)
-- [ ] Middleware de permisos en API Routes
-- [ ] Visibilidad condicional en UI según rol
+- [x] Roles base en BD (Admin, PM, Consultor, Cliente) con seed
+- [x] Workspace con asignación de usuario+rol (WorkspaceUser)
+- [ ] Middleware de permisos en API Routes (Fase 1b)
+- [ ] Visibilidad condicional en UI según rol (Fase 2)
 
 ### Estado Global (Zustand)
-- [ ] Store de autenticación/sesión
-- [ ] Store de proyectos
-- [ ] Store de tareas
+- [x] Store de proyectos (fetch, create, update, delete)
+- [x] Store de tareas (fetch, create, update, delete)
+
+### Seed actualizado
+- [x] Workspace por defecto "Invisible PM" con admin asignado
 
 ---
 

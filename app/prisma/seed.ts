@@ -71,6 +71,36 @@ async function main() {
     console.log(`  User already exists: ${testEmail}`);
   }
 
+  // Default workspace
+  console.log("Seeding workspace...");
+  const user = await prisma.user.findUnique({ where: { email: testEmail } });
+  const adminRole = await prisma.role.findUnique({ where: { name: "Admin" } });
+
+  if (user && adminRole) {
+    const existingWs = await prisma.workspace.findFirst({
+      where: { domain: "invisiblepm.dev", deleted_at: null },
+    });
+
+    if (!existingWs) {
+      const workspace = await prisma.workspace.create({
+        data: { name: "Invisible PM", domain: "invisiblepm.dev" },
+      });
+
+      await prisma.workspaceUser.create({
+        data: {
+          workspace_id: workspace.id,
+          user_id: user.id,
+          role_id: adminRole.id,
+        },
+      });
+
+      console.log(`  Created workspace: ${workspace.name}`);
+      console.log(`  Assigned ${testEmail} as Admin`);
+    } else {
+      console.log(`  Workspace already exists: ${existingWs.name}`);
+    }
+  }
+
   console.log("Seed completed.");
 }
 
