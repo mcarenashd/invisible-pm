@@ -22,13 +22,13 @@ interface CreateProjectDialogProps {
 
 export function CreateProjectDialog({ workspaceId }: CreateProjectDialogProps) {
   const { can } = usePermissions();
-
-  if (!can("project:create")) return null;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const createProject = useProjectStore((s) => s.createProject);
+
+  if (!can("project:create")) return null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
