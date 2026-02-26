@@ -94,7 +94,7 @@
 - [x] Sistema de permisos por rol (`permissions.ts` con RBAC)
 - [x] Helpers `checkPermission()` y `forbiddenResponse()` en api-utils
 - [x] Permisos aplicados a `project:create` y `project:delete`
-- [ ] Visibilidad condicional en UI según rol (Fase 2)
+- [x] Visibilidad condicional en UI según rol (Fase 2)
 
 ### Estado Global (Zustand)
 - [x] Store de proyectos (fetch, create, update, delete)
@@ -126,12 +126,40 @@
 
 ---
 
-## FASE 2: Motor de Interfaz Evolutiva
-> No iniciar hasta completar Fase 1
+## FASE 2: Motor de Interfaz Evolutiva (Progressive Disclosure)
 
-- [ ] Sistema de toggles en configuración de proyecto
-- [ ] Lógica condicional: mostrar/ocultar campos según módulos activos
-- [ ] Vistas diferenciadas por rol (dashboard financiero para gerencia)
+### Foundation
+- [x] Schema: 3 booleans en Project (`module_budget`, `module_time`, `module_workload`) + migración
+- [x] API `/api/me` — endpoint de contexto (rol, workspace, userId)
+- [x] Zustand `auth-store.ts` — `fetchMe()` con guard contra llamadas duplicadas
+- [x] Hook `usePermissions()` — `can()`, `isRole()`, `isManager`, `isReadOnly`
+- [x] Hook `useProjectModules()` — `hasBudget`, `hasTime`, `hasWorkload`
+- [x] `permissions.ts` separado de Prisma (client-safe, sin imports de server)
+- [x] `AuthLoader` en providers.tsx — bootstrap de contexto al autenticarse
+
+### Backend (permisos en API)
+- [x] `PATCH /api/projects/[id]` — acepta module toggles + verifica `project:update`
+- [x] `GET /api/dashboard/stats` — `budgetStats` solo para Admin/PM (módulo budget)
+- [x] `GET /api/time-entries` — own-only enforcement para rol Consultor
+- [x] Store types: `module_*` fields en `ProjectSummary`
+
+### UI — Visibilidad condicional por rol
+- [x] Sidebar: filtra nav por permisos (Cliente solo ve Dashboard + Proyectos)
+- [x] Header: badge con nombre del rol junto al avatar
+- [x] Dashboard: cards "Miembros del equipo" y "Presupuesto activo" solo para managers
+- [x] Crear proyecto: botón oculto sin permiso `project:create`
+- [x] Project header: edit/delete condicionales por permiso + budget metadata solo si `hasBudget`
+- [x] Project header: switches de módulos activos en dialog de edición (solo Admin)
+- [x] Kanban: drag deshabilitado para Cliente, create task oculto sin `task:create`
+- [x] Task card: prop `readOnly` controla drag handle y menú de acciones
+- [x] Task detail sheet: modo lectura completo para Cliente, own-only edit para Consultor
+- [x] Time entries: botones create/delete gated por permisos
+
+### Seed y Tests
+- [x] 3 usuarios de prueba adicionales: `pm@invisiblepm.dev`, `consultor@invisiblepm.dev`, `cliente@invisiblepm.dev`
+- [x] Integration tests project-modules (3 tests: defaults, custom toggles, update independiente)
+- [x] 32 tests totales pasando, build exitoso
+- [x] Página raíz `/` redirige a `/dashboard` (eliminado boilerplate Next.js)
 
 ---
 
